@@ -61,9 +61,16 @@ All of the following symbols are defined in the `gl` namespace.
         const vec3& operator[](int i) const
               vec3& operator[](int i)
 
+    The `vec3` type implements the same subscript accessor. Thus `M[i][j]` is a valid reference to the matrix element at row `i` column `j`.
+
 - Cast-to-float giving row-order matrix data.
 
             operator const GLfloat*() const
+
+    This cast allows 3x3 matrices to be applied directly to program uniforms as follows. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
+
+        mat3 N;
+        glUniformMatrix3fv(location, 1, GL_TRUE, N);
 
 ### 4-matrix
 
@@ -82,15 +89,23 @@ All of the following symbols are defined in the `gl` namespace.
 
 - Array-like subscript accessors returning vec4 row vectors.
 
-        const vec3& operator[](int i) const
-              vec3& operator[](int i)
+        const vec4& operator[](int i) const
+              vec4& operator[](int i)
+
+    The `vec4` type implements the same subscript accessor. Thus `M[i][j]` is a valid reference to the matrix element at row `i` column `j`.
 
 - Cast-to-float giving row-order matrix data.
 
             operator const GLfloat*() const
 
+    This cast allows 4x4 matrices to be applied directly to program uniforms as follows. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
 
-## Vector-matrix Functions
+        mat4 M;
+        glUniformMatrix4fv(location, 1, GL_TRUE, M);
+
+## Functions
+
+### Convenience functions
 
 - Convert an angle in degrees to an angle in radians.
 
@@ -99,6 +114,12 @@ All of the following symbols are defined in the `gl` namespace.
 - Convent an angle in radians to an angle in degrees.
 
         GLfloat to_degrees(GLfloat radians)
+
+- If `glGetError()` is not `GL_NO_ERROR` then print a message to `stderr` and abort. Users may define `NDEBUG` to eliminate all checks.
+
+        GL_CHECK_ERROR()
+
+### Vector-matrix Operations
 
 - Calculate the 3-component sum of `v` and `w`.
 
@@ -152,15 +173,17 @@ All of the following symbols are defined in the `gl` namespace.
 
         vec3 normalize(const vec3& v)
 
-- Return a matrix giving a rotation about X through `a` radians.
+### Transformations
+
+- Return a matrix giving a rotation about the X axis through `a` radians.
 
         mat4 xrotation(GLfloat a)
 
-- Return a matrix giving a rotation about Y through `a` radians.
+- Return a matrix giving a rotation about the Y axis through `a` radians.
 
         mat4 yrotation(GLfloat a)
 
-- Return a matrix giving a rotation about Z through `a` radians.
+- Return a matrix giving a rotation about the Z axis through `a` radians.
 
         mat4 zrotation(GLfloat a)
 
@@ -192,31 +215,33 @@ All of the following symbols are defined in the `gl` namespace.
 
         mat3 normal(const mat4& M)
 
-## Shader Functions
+### Shader Functions
 
-- Load the named file into a newly-allocated buffer. Append nul.
+The following functions implement a shader loader and compiler with error reporting, plus a program linker. Most applications will need only to call `init_program` with their vertex and fragment shader file names, receiving a `GLuint` program object in return. The rest of these functions may be used if the default behavior of `init_program` is not sufficient.
 
-        char *read_shader_source(const char *name)
+- Initialize and return an OpenGL program object using the named vertex and fragment shader source files. Return 0 on failure.
 
-- Check the shader compile status. If failed, print the log. Return status.
-
-        bool report_shader_status(GLuint shader, FILE *fp = stderr)
-
-- Check the program link status. If failed, print the log. Return status.
-
-        bool report_program_status(GLuint program, FILE *fp = stderr)
-
-- Compile and return a new shader of the given type using the given GLSL source string. Return 0 on failure.
-
-        GLuint init_shader(GLenum type, const char *source)
+        GLuint init_program(const char *vert_name,
+                            const char *frag_name)
 
 - Link and return a new program object with the given vertex and fragment shader objects. Return 0 on failure.
 
         GLuint init_program(GLuint vert_shader,
                             GLuint frag_shader)
 
-- Initialize and return an OpenGL program object using the named vertex and fragment shader source files. Return 0 on failure.
+- Load the named file into a newly-allocated buffer. Append nul.
 
-        GLuint init_program(const char *vert_name,
-                            const char *frag_name)
+        char *read_shader_source(const char *name)
+
+- Compile and return a new shader of the given type using the given GLSL source string. Return 0 on failure.
+
+        GLuint init_shader(GLenum type, const char *source)
+
+- Check the shader compile status. If failed, print the log to stream `fp`. Return status.
+
+        bool report_shader_status(GLuint shader, FILE *fp = stderr)
+
+- Check the program link status. If failed, print the log to stream `fp`. Return status.
+
+        bool report_program_status(GLuint program, FILE *fp = stderr)
 

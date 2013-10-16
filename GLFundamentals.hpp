@@ -42,7 +42,11 @@
 
 //------------------------------------------------------------------------------
 
-#define GL_CHECK_ERROR() check(__FILE__, __LINE__)
+#ifdef NDEBUG
+#  define GL_CHECK_ERROR() ((void) 0)
+#else
+#  define GL_CHECK_ERROR() check(__FILE__, __LINE__)
+#endif
 
 namespace gl
 {
