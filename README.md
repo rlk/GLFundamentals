@@ -111,7 +111,7 @@ All of the following symbols are defined in the `gl` namespace.
 
         GLfloat to_radians(GLfloat degrees)
 
-- Convent an angle in radians to an angle in degrees.
+- Convert an angle in radians to an angle in degrees.
 
         GLfloat to_degrees(GLfloat radians)
 
@@ -121,43 +121,43 @@ All of the following symbols are defined in the `gl` namespace.
 
 ### Vector-matrix Operations
 
-- Calculate the 3-component sum of `v` and `w`.
+- Compute the 3-component sum of `v` and `w`.
 
         vec3 operator+(const vec3& v, const vec3& w)
 
-- Calculate the 3-component difference of `v` and `w`.
+- Compute the 3-component difference of `v` and `w`.
 
         vec3 operator-(const vec3& v, const vec3& w)
 
-- Calculate the 3-component scalar quotient of `v` and `k`.
+- Compute the 3-component scalar quotient of `v` and `k`.
 
         vec3 operator/(const vec3& v, GLfloat k)
 
-- Calculate the 3-component scalar product of `v` and `k`.
+- Compute the 3-component scalar product of `v` and `k`.
 
         vec3 operator*(const vec3& v, GLfloat k)
 
-- Calculate the 3-component dot product of `v` and `w`.
+- Compute the 3-component dot product of `v` and `w`.
 
         GLfloat operator*(const vec3& v, const vec3& w)
 
-- Calculate the 4-component dot product of `v` and `w`.
+- Compute the 4-component dot product of `v` and `w`.
 
         GLfloat operator*(const vec4& v, const vec4& w)
 
-- Calculate the 3-component transform of vector `v` by matrix `A`.
+- Compute the 3-component transform of vector `v` by matrix `A`.
 
         vec3 operator*(const mat3& A, const vec3& v)
 
-- Calculate the 4-component transform of vector `v` by matrix `A`.
+- Compute the 4-component transform of vector `v` by matrix `A`.
 
         vec4 operator*(const mat4& A, const vec4& v)
 
-- Calculate the 3x3 matrix product of `A` and `B`.
+- Compute the 3x3 matrix product of `A` and `B`.
 
         mat3 operator*(const mat3& A, const mat3& B)
 
-- Calculate the 4x4 matrix product of `A` and `B`.
+- Compute the 4x4 matrix product of `A` and `B`.
 
         mat4 operator*(const mat4& A, const mat4& B)
 
@@ -172,6 +172,14 @@ All of the following symbols are defined in the `gl` namespace.
 - Compute the normalization of vector `v`.
 
         vec3 normalize(const vec3& v)
+
+- Return the transpose of a 3x3 matrix `A`.
+
+        mat3 transpose(const mat3& A)
+
+- Return the transpose of a 4x4 matrix `A`.
+
+        mat4 transpose(const mat4& A)
 
 ### Transformations
 
@@ -195,7 +203,7 @@ All of the following symbols are defined in the `gl` namespace.
 
         mat4 scale(const vec3& v)
 
-- Return a matrix giving a perspective projection with field-of-view `v`, aspect ratio `a`, near clipping distance `n`, and far clipping distance `f`.
+- Return a matrix giving a perspective projection with field-of-view `v` in radians, aspect ratio `a`, near clipping distance `n`, and far clipping distance `f`.
 
         mat4 perspective(GLfloat v, GLfloat a, GLfloat n, GLfloat f)
 
@@ -219,10 +227,14 @@ All of the following symbols are defined in the `gl` namespace.
 
 The following functions implement a shader loader and compiler with error reporting, plus a program linker. Most applications will need only to call `init_program` with their vertex and fragment shader file names, receiving a `GLuint` program object in return. The rest of these functions may be used if the default behavior of `init_program` is not sufficient.
 
+#### The Best
+
 - Initialize and return an OpenGL program object using the named vertex and fragment shader source files. Return 0 on failure.
 
-        GLuint init_program(const char *vert_name,
-                            const char *frag_name)
+        GLuint init_program(const char *vert_filename,
+                            const char *frag_filename)
+
+#### The Rest
 
 - Link and return a new program object with the given vertex and fragment shader objects. Return 0 on failure.
 
@@ -231,17 +243,17 @@ The following functions implement a shader loader and compiler with error report
 
 - Load the named file into a newly-allocated buffer. Append nul.
 
-        char *read_shader_source(const char *name)
+        char *read_shader_source(const char *filename)
 
 - Compile and return a new shader of the given type using the given GLSL source string. Return 0 on failure.
 
         GLuint init_shader(GLenum type, const char *source)
 
-- Check the shader compile status. If failed, print the log to stream `fp`. Return status.
+- Check the shader compile status. If failed, print the log to `stream`. Return status.
 
-        bool report_shader_status(GLuint shader, FILE *fp = stderr)
+        bool report_shader_status(GLuint shader, FILE *stream = stderr)
 
-- Check the program link status. If failed, print the log to stream `fp`. Return status.
+- Check the program link status. If failed, print the log to `stream`. Return status.
 
-        bool report_program_status(GLuint program, FILE *fp = stderr)
+        bool report_program_status(GLuint program, FILE *stream = stderr)
 

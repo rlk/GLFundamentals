@@ -50,18 +50,18 @@
 
 namespace gl
 {
-    inline void check(const char *file, int line, FILE *fp = stderr)
+    inline void check(const char *file, int line, FILE *stream = stderr)
     {
         switch (glGetError())
         {
         case GL_INVALID_ENUM:
-            fprintf(fp, "%s:%d: Invalid Enum\n",      file, line); abort();
+            fprintf(stream, "%s:%d: Invalid Enum\n",      file, line); abort();
         case GL_INVALID_VALUE:
-            fprintf(fp, "%s:%d: Invalid Value\n",     file, line); abort();
+            fprintf(stream, "%s:%d: Invalid Value\n",     file, line); abort();
         case GL_INVALID_OPERATION:
-            fprintf(fp, "%s:%d: Invalid Operation\n", file, line); abort();
+            fprintf(stream, "%s:%d: Invalid Operation\n", file, line); abort();
         case GL_OUT_OF_MEMORY:
-            fprintf(fp, "%s:%d: Out of Memory\n",     file, line); abort();
+            fprintf(stream, "%s:%d: Out of Memory\n",     file, line); abort();
         }
     }
 
@@ -283,6 +283,28 @@ namespace gl
         return M;
     }
 
+    /// Return the transpose of a 3x3 matrix.
+
+    inline mat3 transpose(const mat3& A)
+    {
+        mat3 M;
+        for     (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                M[i][j] = A[j][i];
+        return M;
+    }
+
+    /// Return the transpose of a 4x4 matrix.
+
+    inline mat4 transpose(const mat4& A)
+    {
+        mat4 M;
+        for     (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                M[i][j] = A[j][i];
+        return M;
+    }
+
     //--------------------------------------------------------------------------
 
     /// Compute the length of vector v.
@@ -427,37 +449,37 @@ namespace gl
 
     /// Load the named file into a newly-allocated buffer. Append nul.
 
-    inline char *read_shader_source(const char *name)
+    inline char *read_shader_source(const char *filename)
     {
-        FILE *fp = 0;
+        FILE *stream = 0;
         void  *p = 0;
         size_t n = 0;
 
-        if ((fp = fopen(name, "rb")))
+        if ((stream = fopen(filename, "rb")))
         {
-            if (fseek(fp, 0, SEEK_END) == 0)
+            if (fseek(stream, 0, SEEK_END) == 0)
             {
-                if ((n = (size_t) ftell(fp)))
+                if ((n = (size_t) ftell(stream)))
                 {
-                    if (fseek(fp, 0, SEEK_SET) == 0)
+                    if (fseek(stream, 0, SEEK_SET) == 0)
                     {
                         if ((p = calloc(n + 1, 1)))
                         {
-                            fread(p, 1, n, fp);
+                            fread(p, 1, n, stream);
                         }
                     }
                 }
             }
-            fclose(fp);
+            fclose(stream);
         }
-        else fprintf(stderr, "Failed to open '%s'.\n", name);
+        else fprintf(stderr, "Failed to open '%s'.\n", filename);
 
         return (char *) p;
     }
 
     /// Check the shader compile status. If failed, print the log. Return status.
 
-    inline bool report_shader_status(GLuint shader, FILE *fp = stderr)
+    inline bool report_shader_status(GLuint shader, FILE *stream = stderr)
     {
         GLchar *p = 0;
         GLint   s = 0;
@@ -472,7 +494,7 @@ namespace gl
             {
                 glGetShaderInfoLog(shader, n, NULL, p);
 
-                fprintf(fp, "Shader Error:\n%s", p);
+                fprintf(stream, "Shader Error:\n%s", p);
                 free(p);
             }
             return false;
@@ -482,7 +504,7 @@ namespace gl
 
     /// Check the program link status. If failed, print the log. Return status.
 
-    inline bool report_program_status(GLuint program, FILE *fp = stderr)
+    inline bool report_program_status(GLuint program, FILE *stream = stderr)
     {
         GLchar *p = 0;
         GLint   s = 0;
@@ -497,7 +519,7 @@ namespace gl
             {
                 glGetProgramInfoLog(program, n, NULL, p);
 
-                fprintf(fp, "Program Error:\n%s", p);
+                fprintf(stream, "Program Error:\n%s", p);
                 free(p);
             }
             return false;
@@ -550,13 +572,13 @@ namespace gl
     /// Initialize and return an OpenGL program object using the named vertex
     /// and fragment shader source files. Return 0 on failure.
 
-    inline GLuint init_program(const char *vert_name,
-                               const char *frag_name)
+    inline GLuint init_program(const char *vert_filename,
+                               const char *frag_filename)
     {
         GLuint program = 0;
 
-        char *vert_source = read_shader_source(vert_name);
-        char *frag_source = read_shader_source(frag_name);
+        char *vert_source = read_shader_source(vert_filename);
+        char *frag_source = read_shader_source(frag_filename);
 
         if (vert_source && frag_source)
         {
