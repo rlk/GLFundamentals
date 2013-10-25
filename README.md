@@ -229,31 +229,31 @@ The following functions implement a shader loader and compiler with error report
 
 #### The Best
 
-- Initialize and return an OpenGL program object using the named vertex and fragment shader source files. Return 0 on failure.
+- Initialize and return an OpenGL program object using the named vertex and fragment shader source files. On failure, print a message to `stderr` and return 0.
 
         GLuint init_program(const char *vert_filename,
                             const char *frag_filename)
 
 #### The Rest
 
-- Link and return a new program object with the given vertex and fragment shader objects. Return 0 on failure.
+- Link and return a new program object with the given vertex and fragment shader objects. On failure, print a message to `stderr` and return 0.
 
         GLuint init_program(GLuint vert_shader,
                             GLuint frag_shader)
 
-- Load the named file into a newly-allocated buffer. Append nul.
-
-        char *read_shader_source(const char *filename)
-
-- Compile and return a new shader of the given type using the given GLSL source string. Return 0 on failure.
+- Compile and return a new shader of the given type using the given GLSL source string. On failure, print a message to `stderr` and return 0.
 
         GLuint init_shader(GLenum type, const char *source)
 
-- Check the shader compile status. If failed, print the log to `stream`. Return status.
+- Load the named file into a newly-allocated, nul-terminated buffer. Return `NULL` on failure.
+
+        char *read_shader_source(const char *filename)
+
+- Check the shader compile status. On failure, print the log to `stream`. Return status.
 
         bool report_shader_status(GLuint shader, FILE *stream = stderr)
 
-- Check the program link status. If failed, print the log to `stream`. Return status.
+- Check the program link status. On failure, print the log to `stream`. Return status.
 
         bool report_program_status(GLuint program, FILE *stream = stderr)
 
