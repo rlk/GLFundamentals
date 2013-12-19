@@ -4,57 +4,72 @@ GLFundamentals is C++ header that provides the basic functionality necessary to 
 
 Given the lack of fixed functionality and matrix handling, all applications will need to load and compile shaders and perform matrix arithmetic. Thus, these capabilities are provided here.
 
+Basic TGA read and write procedures for texture handling are also provided.
+
 All of the following symbols are defined in the `gl` namespace.
 
 ## Types
 
-### 3-vector
+### 2-vector
 
-`struct vec3` represents a 3-component vector of `GLfloat` values.
+`struct vec2` represents a 2-component vector of `GLfloat` values.
 
-- Constructor initializing to (0, 0, 0).
+- Constructor initializing to (x, y). Default is (0, 0).
 
-        vec3()
-
-- Constructor initializing to (x, y, z).
-
-        vec3(GLfloat x, GLfloat y, GLfloat z)
+        vec3(GLfloat x=0, GLfloat y=0)
 
 - Accessors giving array-like subscripting.
 
         const GLfloat& operator[](int i) const
               GLfloat& operator[](int i)
 
+- Cast to float.
+
+        operator const GLfloat*() const
+
+### 3-vector
+
+`struct vec3` represents a 3-component vector of `GLfloat` values.
+
+- Constructor initializing to (x, y, z). Default is (0, 0, 0).
+
+        vec3(GLfloat x=0, GLfloat y=0, GLfloat z=0)
+
+- Accessors giving array-like subscripting.
+
+        const GLfloat& operator[](int i) const
+              GLfloat& operator[](int i)
+
+- Cast to float.
+
+        operator const GLfloat*() const
+
 ### 4-vector
 
 `struct vec4` represents a 4-component vector of `GLfloat` values.
 
-- Constructor initializing to (0, 0, 0, 0).
+- Constructor initializing to (x, y, z, w). Default is (0, 0, 0, 0).
 
-        vec4()
-
-- Constructor initializing to (x, y, z, w).
-
-        vec4(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+        vec4(GLfloat x=0, GLfloat y=0, GLfloat z=0, GLfloat w=0)
 
 - Array-like subscript accessors returning scalar values.
 
         const GLfloat& operator[](int i) const
               GLfloat& operator[](int i)
 
+- Cast to float
+
+        operator const GLfloat*() const
+
 ### 3-matrix
 
 `struct mat3` represents a 3x3 matrix of `GLfloat` values.
 
-- Constructor initializing to the identity.
+- Constructor. Default is the identity.
 
-        mat3()
-
-- Constructor with full initialization.
-
-        mat3(GLfloat m00, GLfloat m01, GLfloat m02,
-             GLfloat m10, GLfloat m11, GLfloat m12,
-             GLfloat m20, GLfloat m21, GLfloat m22)
+        mat3(GLfloat m00=1, GLfloat m01=0, GLfloat m02=0,
+             GLfloat m10=0, GLfloat m11=1, GLfloat m12=0,
+             GLfloat m20=0, GLfloat m21=0, GLfloat m22=1)
 
 - Array-like subscript accessors returning vec3 row vectors.
 
@@ -63,11 +78,11 @@ All of the following symbols are defined in the `gl` namespace.
 
     The `vec3` type implements the same subscript accessor. Thus `M[i][j]` is a valid reference to the matrix element at row `i` column `j`.
 
-- Cast-to-float giving row-order matrix data.
+- Cast to float giving row-order matrix data.
 
-            operator const GLfloat*() const
+        operator const GLfloat*() const
 
-    This cast allows 3x3 matrices to be applied directly to program uniforms as follows. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
+    This cast allows 3x3 matrices to be applied directly to program uniforms. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
 
         mat3 N;
         glUniformMatrix3fv(location, 1, GL_TRUE, N);
@@ -76,16 +91,12 @@ All of the following symbols are defined in the `gl` namespace.
 
 `struct mat4` represents a 4x4 matrix of `GLfloat` values.
 
-- Constructor initializing to the identity.
+- Constructor. Default is the identity.
 
-        mat4()
-
-- Constructor with full initialization.
-
-        mat4(GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
-             GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
-             GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
-             GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33)
+        mat4(GLfloat m00=1, GLfloat m01=0, GLfloat m02=0, GLfloat m03=0,
+             GLfloat m10=0, GLfloat m11=1, GLfloat m12=0, GLfloat m13=0,
+             GLfloat m20=0, GLfloat m21=0, GLfloat m22=1, GLfloat m23=0,
+             GLfloat m30=0, GLfloat m31=0, GLfloat m32=0, GLfloat m33=1)
 
 - Array-like subscript accessors returning vec4 row vectors.
 
@@ -94,11 +105,11 @@ All of the following symbols are defined in the `gl` namespace.
 
     The `vec4` type implements the same subscript accessor. Thus `M[i][j]` is a valid reference to the matrix element at row `i` column `j`.
 
-- Cast-to-float giving row-order matrix data.
+- Cast to float giving row-order matrix data.
 
-            operator const GLfloat*() const
+        operator const GLfloat*() const
 
-    This cast allows 4x4 matrices to be applied directly to program uniforms as follows. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
+    This cast allows 4x4 matrices to be applied directly to program uniforms. As the internal matrix representation is row-wise, pass `GL_TRUE` to the transpose argument.
 
         mat4 M;
         glUniformMatrix4fv(location, 1, GL_TRUE, M);
@@ -161,6 +172,18 @@ All of the following symbols are defined in the `gl` namespace.
 
         mat4 operator*(const mat4& A, const mat4& B)
 
+- Return the transpose of a 3x3 matrix `A`.
+
+        mat3 transpose(const mat3& A)
+
+- Return the transpose of a 4x4 matrix `A`.
+
+        mat4 transpose(const mat4& A)
+
+- Return the inverse of a 4x4 matrix `A`.
+
+        mat4 inverse(const mat4& A)
+
 - Compute the length of vector `v`.
 
         GLfloat length(const vec3 &v)
@@ -172,14 +195,6 @@ All of the following symbols are defined in the `gl` namespace.
 - Compute the normalization of vector `v`.
 
         vec3 normalize(const vec3& v)
-
-- Return the transpose of a 3x3 matrix `A`.
-
-        mat3 transpose(const mat3& A)
-
-- Return the transpose of a 4x4 matrix `A`.
-
-        mat4 transpose(const mat4& A)
 
 ### Transformations
 
@@ -194,6 +209,10 @@ All of the following symbols are defined in the `gl` namespace.
 - Return a matrix giving a rotation about the Z axis through `a` radians.
 
         mat4 zrotation(GLfloat a)
+
+- Return a matrix giving a rotation about vector `v` through `a` radians.
+
+        mat4 rotation(const vec3& v, GLfloat a)
 
 - Return a matrix giving a translation along vector `v`.
 
@@ -222,6 +241,16 @@ All of the following symbols are defined in the `gl` namespace.
 - Compute a normal matrix for the given model-view matrix by returning the transposed inverse upper 3x3 matrix of the given 4x4 matrix.
 
         mat3 normal(const mat4& M)
+
+### Image Functions
+
+- Read a 24 or 32-bit uncompressed true-color Targa image file (TGA). Return a pointer to the raw pixels. Give width, height, and depth in `w`, `h`, `d`. Return null on failure.
+
+        void *read_tga(const char *filename, int& w, int& h, int& d)
+
+- Write a 24 or 32-bit uncompressed true-color Targa image file (TGA). Receive the raw pixel buffer in `p`. Receive width, height, and depth in `w`, `h`, and `d`. Return 0 on success and -1 on failure. `errno` indicates the error.
+
+        int write_tga(const char *filename, int w, int h, int d, void *p)
 
 ### Shader Functions
 

@@ -27,6 +27,8 @@
 /// Given the lack of fixed functionality and matrix handling, all applications
 /// will need to load and compile shaders and perform matrix arithmetic. Thus,
 /// these capabilities are provided here.
+///
+/// Basic TGA read and write procedures for texture handling are also provided.
 
 //------------------------------------------------------------------------------
 
@@ -67,27 +69,55 @@ namespace gl
 
     //--------------------------------------------------------------------------
 
+    /// 2-component 32-bit floating point vector.
+
+    struct vec2
+    {
+        GLfloat v[2];
+
+        vec2(GLfloat x=0, GLfloat y=0)
+        {
+            v[0] = x;
+            v[1] = y;
+        }
+
+        const GLfloat& operator[](int i) const { return v[i]; }
+              GLfloat& operator[](int i)       { return v[i]; }
+
+        operator const GLfloat*() const
+        {
+            return const_cast<GLfloat *>(&v[0]);
+        }
+    };
+
+    //--------------------------------------------------------------------------
+
     /// 3-component 32-bit floating point vector.
 
     struct vec3
     {
         GLfloat v[3];
 
-        vec3()
-        {
-            v[0] = 0;
-            v[1] = 0;
-            v[2] = 0;
-        }
-        vec3(GLfloat x, GLfloat y, GLfloat z)
+        vec3(GLfloat x=0, GLfloat y=0, GLfloat z=0)
         {
             v[0] = x;
             v[1] = y;
             v[2] = z;
         }
+        vec3(const vec2& a, GLfloat b=0)
+        {
+            v[0] = a[0];
+            v[1] = a[1];
+            v[2] = b;
+        }
 
         const GLfloat& operator[](int i) const { return v[i]; }
               GLfloat& operator[](int i)       { return v[i]; }
+
+        operator const GLfloat*() const
+        {
+            return const_cast<GLfloat *>(&v[0]);
+        }
     };
 
     //--------------------------------------------------------------------------
@@ -98,23 +128,28 @@ namespace gl
     {
         GLfloat v[4];
 
-        vec4()
-        {
-            v[0] = 0;
-            v[1] = 0;
-            v[2] = 0;
-            v[3] = 0;
-        }
-        vec4(GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+        vec4(GLfloat x=0, GLfloat y=0, GLfloat z=0, GLfloat w=0)
         {
             v[0] = x;
             v[1] = y;
             v[2] = z;
             v[3] = w;
         }
+        vec4(const vec3& a, GLfloat b=0)
+        {
+            v[0] = a[0];
+            v[1] = a[1];
+            v[2] = a[2];
+            v[3] = b;
+        }
 
         const GLfloat& operator[](int i) const { return v[i]; }
               GLfloat& operator[](int i)       { return v[i]; }
+
+        operator const GLfloat*() const
+        {
+            return const_cast<GLfloat *>(&v[0]);
+        }
     };
 
     //--------------------------------------------------------------------------
@@ -125,15 +160,9 @@ namespace gl
     {
         vec3 M[3];
 
-        mat3()
-        {
-            M[0] = vec3(1, 0, 0);
-            M[1] = vec3(0, 1, 0);
-            M[2] = vec3(0, 0, 1);
-        }
-        mat3(GLfloat m00, GLfloat m01, GLfloat m02,
-             GLfloat m10, GLfloat m11, GLfloat m12,
-             GLfloat m20, GLfloat m21, GLfloat m22)
+        mat3(GLfloat m00=1, GLfloat m01=0, GLfloat m02=0,
+             GLfloat m10=0, GLfloat m11=1, GLfloat m12=0,
+             GLfloat m20=0, GLfloat m21=0, GLfloat m22=1)
         {
             M[0] = vec3(m00, m01, m02);
             M[1] = vec3(m10, m11, m12);
@@ -157,17 +186,10 @@ namespace gl
     {
         vec4 M[4];
 
-        mat4()
-        {
-            M[0] = vec4(1, 0, 0, 0);
-            M[1] = vec4(0, 1, 0, 0);
-            M[2] = vec4(0, 0, 1, 0);
-            M[3] = vec4(0, 0, 0, 1);
-        }
-        mat4(GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
-             GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
-             GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
-             GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33)
+        mat4(GLfloat m00=0, GLfloat m01=0, GLfloat m02=0, GLfloat m03=0,
+             GLfloat m10=0, GLfloat m11=0, GLfloat m12=0, GLfloat m13=0,
+             GLfloat m20=0, GLfloat m21=0, GLfloat m22=0, GLfloat m23=0,
+             GLfloat m30=0, GLfloat m31=0, GLfloat m32=0, GLfloat m33=0)
         {
             M[0] = vec4(m00, m01, m02, m03);
             M[1] = vec4(m10, m11, m12, m13);
@@ -200,6 +222,15 @@ namespace gl
         return radians * 57.2957795;
     }
 
+    //--------------------------------------------------------------------------
+
+    /// Calculate the 3-component negation of v.
+
+    inline vec3 operator-(const vec3& v)
+    {
+        return vec3(-v[0], -v[1], -v[2]);
+    }
+
     /// Calculate the 3-component sum of v and w.
 
     inline vec3 operator+(const vec3& v, const vec3& w)
@@ -227,6 +258,8 @@ namespace gl
     {
         return vec3(v[0] * k, v[1] * k, v[2] * k);
     }
+
+    //--------------------------------------------------------------------------
 
     /// Calculate the 3-component dot product of v and w.
 
@@ -283,6 +316,8 @@ namespace gl
         return M;
     }
 
+    //--------------------------------------------------------------------------
+
     /// Return the transpose of a 3x3 matrix.
 
     inline mat3 transpose(const mat3& A)
@@ -303,6 +338,72 @@ namespace gl
             for (int j = 0; j < 4; j++)
                 M[i][j] = A[j][i];
         return M;
+    }
+
+    /// Return the inverse of 4x4 matrix.
+
+    inline mat4 inverse(const mat4& A)
+    {
+        mat4 T;
+
+        T[0][0] = +(A[1][1] * (A[2][2] * A[3][3] - A[3][2] * A[2][3]) -
+                    A[1][2] * (A[2][1] * A[3][3] - A[3][1] * A[2][3]) +
+                    A[1][3] * (A[2][1] * A[3][2] - A[3][1] * A[2][2]));
+        T[0][1] = -(A[1][0] * (A[2][2] * A[3][3] - A[3][2] * A[2][3]) -
+                    A[1][2] * (A[2][0] * A[3][3] - A[3][0] * A[2][3]) +
+                    A[1][3] * (A[2][0] * A[3][2] - A[3][0] * A[2][2]));
+        T[0][2] = +(A[1][0] * (A[2][1] * A[3][3] - A[3][1] * A[2][3]) -
+                    A[1][1] * (A[2][0] * A[3][3] - A[3][0] * A[2][3]) +
+                    A[1][3] * (A[2][0] * A[3][1] - A[3][0] * A[2][1]));
+        T[0][3] = -(A[1][0] * (A[2][1] * A[3][2] - A[3][1] * A[2][2]) -
+                    A[1][1] * (A[2][0] * A[3][2] - A[3][0] * A[2][2]) +
+                    A[1][2] * (A[2][0] * A[3][1] - A[3][0] * A[2][1]));
+
+        T[1][0] = -(A[0][1] * (A[2][2] * A[3][3] - A[3][2] * A[2][3]) -
+                    A[0][2] * (A[2][1] * A[3][3] - A[3][1] * A[2][3]) +
+                    A[0][3] * (A[2][1] * A[3][2] - A[3][1] * A[2][2]));
+        T[1][1] = +(A[0][0] * (A[2][2] * A[3][3] - A[3][2] * A[2][3]) -
+                    A[0][2] * (A[2][0] * A[3][3] - A[3][0] * A[2][3]) +
+                    A[0][3] * (A[2][0] * A[3][2] - A[3][0] * A[2][2]));
+        T[1][2] = -(A[0][0] * (A[2][1] * A[3][3] - A[3][1] * A[2][3]) -
+                    A[0][1] * (A[2][0] * A[3][3] - A[3][0] * A[2][3]) +
+                    A[0][3] * (A[2][0] * A[3][1] - A[3][0] * A[2][1]));
+        T[1][3] = +(A[0][0] * (A[2][1] * A[3][2] - A[3][1] * A[2][2]) -
+                    A[0][1] * (A[2][0] * A[3][2] - A[3][0] * A[2][2]) +
+                    A[0][2] * (A[2][0] * A[3][1] - A[3][0] * A[2][1]));
+
+        T[2][0] = +(A[0][1] * (A[1][2] * A[3][3] - A[3][2] * A[1][3]) -
+                    A[0][2] * (A[1][1] * A[3][3] - A[3][1] * A[1][3]) +
+                    A[0][3] * (A[1][1] * A[3][2] - A[3][1] * A[1][2]));
+        T[2][1] = -(A[0][0] * (A[1][2] * A[3][3] - A[3][2] * A[1][3]) -
+                    A[0][2] * (A[1][0] * A[3][3] - A[3][0] * A[1][3]) +
+                    A[0][3] * (A[1][0] * A[3][2] - A[3][0] * A[1][2]));
+        T[2][2] = +(A[0][0] * (A[1][1] * A[3][3] - A[3][1] * A[1][3]) -
+                    A[0][1] * (A[1][0] * A[3][3] - A[3][0] * A[1][3]) +
+                    A[0][3] * (A[1][0] * A[3][1] - A[3][0] * A[1][1]));
+        T[2][3] = -(A[0][0] * (A[1][1] * A[3][2] - A[3][1] * A[1][2]) -
+                    A[0][1] * (A[1][0] * A[3][2] - A[3][0] * A[1][2]) +
+                    A[0][2] * (A[1][0] * A[3][1] - A[3][0] * A[1][1]));
+
+        T[3][0] = -(A[0][1] * (A[1][2] * A[2][3] - A[2][2] * A[1][3]) -
+                    A[0][2] * (A[1][1] * A[2][3] - A[2][1] * A[1][3]) +
+                    A[0][3] * (A[1][1] * A[2][2] - A[2][1] * A[1][2]));
+        T[3][1] = +(A[0][0] * (A[1][2] * A[2][3] - A[2][2] * A[1][3]) -
+                    A[0][2] * (A[1][0] * A[2][3] - A[2][0] * A[1][3]) +
+                    A[0][3] * (A[1][0] * A[2][2] - A[2][0] * A[1][2]));
+        T[3][2] = -(A[0][0] * (A[1][1] * A[2][3] - A[2][1] * A[1][3]) -
+                    A[0][1] * (A[1][0] * A[2][3] - A[2][0] * A[1][3]) +
+                    A[0][3] * (A[1][0] * A[2][1] - A[2][0] * A[1][1]));
+        T[3][3] = +(A[0][0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2]) -
+                    A[0][1] * (A[1][0] * A[2][2] - A[2][0] * A[1][2]) +
+                    A[0][2] * (A[1][0] * A[2][1] - A[2][0] * A[1][1]));
+
+        const GLfloat d = 1 / (A[0] * T[0]);
+
+        return mat4(T[0][0] * d, T[1][0] * d, T[2][0] * d, T[3][0] * d,
+                    T[0][1] * d, T[1][1] * d, T[2][1] * d, T[3][1] * d,
+                    T[0][2] * d, T[1][2] * d, T[2][2] * d, T[3][2] * d,
+                    T[0][3] * d, T[1][3] * d, T[2][3] * d, T[3][3] * d);
     }
 
     //--------------------------------------------------------------------------
@@ -329,6 +430,8 @@ namespace gl
     {
         return v / length(v);
     }
+
+    //--------------------------------------------------------------------------
 
     /// Return a matrix giving a rotation about X through a radians.
 
@@ -358,6 +461,29 @@ namespace gl
                     sin(a),  cos(a), 0, 0,
                     0,       0,      1, 0,
                     0,       0,      0, 1);
+    }
+
+    /// Return a matrix giving a rotation about v through a radians.
+
+    inline mat4 rotation(const vec3& v, double a)
+    {
+        const vec3    u = normalize(v);
+        const GLfloat s = GLfloat(sin(a));
+        const GLfloat c = GLfloat(cos(a));
+
+        return mat4(u[0] * u[0] + (1 - u[0] * u[0]) * c,
+                    u[0] * u[1] + (0 - u[0] * u[1]) * c - u[2] * s,
+                    u[0] * u[2] + (0 - u[0] * u[2]) * c + u[1] * s,
+                    0,
+                    u[1] * u[0] + (0 - u[1] * u[0]) * c + u[2] * s,
+                    u[1] * u[1] + (1 - u[1] * u[1]) * c,
+                    u[1] * u[2] + (0 - u[1] * u[2]) * c - u[0] * s,
+                    0,
+                    u[2] * u[0] + (0 - u[2] * u[0]) * c - u[1] * s,
+                    u[2] * u[1] + (0 - u[2] * u[1]) * c + u[0] * s,
+                    u[2] * u[2] + (1 - u[2] * u[2]) * c,
+                    0,
+                    0, 0, 0, 1);
     }
 
     /// Return a matrix giving a translation along vector v.
@@ -420,29 +546,86 @@ namespace gl
                     -2 / (f - n),       -(f + n) / (f - n), 0, 0, 0, 1);
     }
 
-    /// Compute a normal matrix for the given model-view matrix by returning
-    /// the transposed inverse upper 3x3 matrix of the given 4x4 matrix.
+    //--------------------------------------------------------------------------
 
-    inline mat3 normal(const mat4& M)
+    #pragma pack(push, 1)
+    struct tga_head
     {
-        const GLfloat d = M[0][0] * M[1][1] * M[2][2]
-                        - M[0][0] * M[1][2] * M[2][1]
-                        + M[0][1] * M[1][2] * M[2][0]
-                        - M[0][1] * M[1][0] * M[2][2]
-                        + M[0][2] * M[1][0] * M[2][1]
-                        - M[0][2] * M[1][1] * M[2][0];
-        if (fabs(d) > 0.f)
-            return mat3(-M[1][2] * M[2][1] + M[1][1] * M[2][2],
-                         M[1][2] * M[2][0] - M[1][0] * M[2][2],
-                        -M[1][1] * M[2][0] + M[1][0] * M[2][1],
-                         M[0][2] * M[2][1] - M[0][1] * M[2][2],
-                        -M[0][2] * M[2][0] + M[0][0] * M[2][2],
-                         M[0][1] * M[2][0] - M[0][0] * M[2][1],
-                        -M[0][2] * M[1][1] + M[0][1] * M[1][2],
-                         M[0][2] * M[1][0] - M[0][0] * M[1][2],
-                        -M[0][1] * M[1][0] + M[0][0] * M[1][1]);
-        else
-            return mat3();
+        unsigned char  id_length;
+        unsigned char  color_map_type;
+        unsigned char  image_type;
+        unsigned short color_map_offset;
+        unsigned short color_map_length;
+        unsigned char  color_map_size;
+        unsigned short image_x_origin;
+        unsigned short image_y_origin;
+        unsigned short image_width;
+        unsigned short image_height;
+        unsigned char  image_depth;
+        unsigned char  image_descriptor;
+    };
+    #pragma pack(pop)
+
+    /// Write a 24 or 32-bit uncompressed true-color Targa image file. Receive
+    /// the raw pixel buffer in p and width, height, and depth in w, h, and d.
+    /// Return 0 on success and -1 on failure. Errno indicates the error.
+
+    inline int write_tga(const char *filename, int w, int h, int d, void *p)
+    {
+        tga_head head = { 0, 0, 2, 0, 0, 0, 0, 0, w, h, d, (d == 32 ? 8 : 0) };
+
+        if (d == 24 || d == 32)
+        {
+            if (FILE *stream = fopen(filename, "wb"))
+            {
+                if (fwrite(&head, sizeof (tga_head), 1, stream) == 1)
+                {
+                    if (fwrite(p, d / 8, w * h, stream) == w * h)
+                    {
+                        fclose(stream);
+                        return 0;
+                    }
+                }
+                fclose(stream);
+            }
+        }
+        return -1;
+    }
+
+    /// Read a 24 or 32-bit uncompressed true-color Targa image file. Return a
+    /// pointer to the raw pixels. Give width, height, and depth in w, h, d.
+    /// Return null on failure.
+
+    inline void *read_tga(const char *filename, int& w, int& h, int& d)
+    {
+        tga_head head;
+
+        if (FILE *stream = fopen(filename, "rb"))
+        {
+            if (fread(&head, sizeof (tga_head), 1, stream) == 1)
+            {
+                if (head.image_type == 2)
+                {
+                    w = int(head.image_width);
+                    h = int(head.image_height);
+                    d = int(head.image_depth);
+
+                    if (fseek(stream, head.id_length, SEEK_CUR) == 0)
+                    {
+                        if (void *p = calloc(w * h, d / 8))
+                        {
+                            if (fread(p, d / 8, w * h, stream) == w * h)
+                            {
+                                fclose(stream);
+                                return p;
+                            }
+                        }
+                    }
+                }
+            }
+            fclose(stream);
+        }
+        return 0;
     }
 
     //--------------------------------------------------------------------------
