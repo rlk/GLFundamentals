@@ -546,6 +546,31 @@ namespace gl
                     -2 / (f - n),       -(f + n) / (f - n), 0, 0, 0, 1);
     }
 
+    /// Compute a normal matrix for the given model-view matrix by returning
+    /// the transposed inverse upper 3x3 matrix of the given 4x4 matrix.
+
+    inline mat3 normal(const mat4& M)
+    {
+        const GLfloat d = M[0][0] * M[1][1] * M[2][2]
+                        - M[0][0] * M[1][2] * M[2][1]
+                        + M[0][1] * M[1][2] * M[2][0]
+                        - M[0][1] * M[1][0] * M[2][2]
+                        + M[0][2] * M[1][0] * M[2][1]
+                        - M[0][2] * M[1][1] * M[2][0];
+        if (fabs(d) > 0.f)
+            return mat3(-M[1][2] * M[2][1] + M[1][1] * M[2][2],
+                         M[1][2] * M[2][0] - M[1][0] * M[2][2],
+                        -M[1][1] * M[2][0] + M[1][0] * M[2][1],
+                         M[0][2] * M[2][1] - M[0][1] * M[2][2],
+                        -M[0][2] * M[2][0] + M[0][0] * M[2][2],
+                         M[0][1] * M[2][0] - M[0][0] * M[2][1],
+                        -M[0][2] * M[1][1] + M[0][1] * M[1][2],
+                         M[0][2] * M[1][0] - M[0][0] * M[1][2],
+                        -M[0][1] * M[1][0] + M[0][0] * M[1][1]);
+        else
+            return mat3();
+    }
+
     //--------------------------------------------------------------------------
 
     #pragma pack(push, 1)
