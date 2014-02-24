@@ -39,6 +39,7 @@
 #endif
 
 #include <cstdlib>
+#include <cstring>
 #include <cstdio>
 #include <cmath>
 
@@ -597,7 +598,15 @@ namespace gl
 
     inline int write_tga(const char *filename, int w, int h, int d, void *p)
     {
-        tga_head head = { 0, 0, 2, 0, 0, 0, 0, 0, w, h, d, (d == 32 ? 8 : 0) };
+        tga_head head;
+
+        memset(&head, 0, sizeof (tga_head));
+
+        head.image_type       = 2;
+        head.image_width      = (unsigned short) w;
+        head.image_height     = (unsigned short) h;
+        head.image_depth      = (unsigned  char) d;
+        head.image_descriptor = (d == 32) ? 8 : 0;
 
         if (d == 24 || d == 32)
         {
@@ -605,7 +614,7 @@ namespace gl
             {
                 if (fwrite(&head, sizeof (tga_head), 1, stream) == 1)
                 {
-                    if (fwrite(p, d / 8, w * h, stream) == w * h)
+                    if (fwrite(p, d / 8, w * h, stream) == size_t(w * h))
                     {
                         fclose(stream);
                         return 0;
@@ -639,7 +648,7 @@ namespace gl
                     {
                         if (void *p = calloc(w * h, d / 8))
                         {
-                            if (fread(p, d / 8, w * h, stream) == w * h)
+                            if (fread(p, d / 8, w * h, stream) == size_t(w * h))
                             {
                                 fclose(stream);
                                 return p;
