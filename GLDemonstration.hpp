@@ -57,6 +57,10 @@ namespace gl
                 {
                     context = SDL_GL_CreateContext(window);
                     running = true;
+#ifdef GLEW_VERSION
+                    glewExperimental = GL_TRUE;
+                    glewInit();
+#endif
                 }
             }
         }
