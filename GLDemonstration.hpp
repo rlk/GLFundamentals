@@ -33,8 +33,12 @@ namespace gl
 
         /// Initialize an SDL OpenGL window with the given title and size.
 
-        demonstration(const char *title, int w, int h)
-            : width(w), height(h), running(false)
+        demonstration(const char *title, int w, int h) :
+            width(w),
+            height(h),
+            running(false),
+            drag_sun_rotation(false),
+            drag_cam_rotation(false)
         {
             if (SDL_Init(SDL_INIT_VIDEO) == 0)
             {
