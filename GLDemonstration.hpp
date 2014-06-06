@@ -37,6 +37,7 @@ namespace gl
             width(w),
             height(h),
             running(false),
+            sun_rotation(-90, 0),
             drag_sun_rotation(false),
             drag_cam_rotation(false)
         {
@@ -203,13 +204,21 @@ namespace gl
             return perspective(to_radians(60.f), a, n, f);
         }
 
-        /// Return the current view matrix;
+        /// Return the current view matrix.
 
         mat4 view() const
         {
             return xrotation(to_radians(cam_rotation[0]))
                  * yrotation(to_radians(cam_rotation[1]))
                  * translation(-cam_position);
+        }
+
+        /// Return the current light vector.
+
+        vec4 light() const
+        {
+            return xrotation(to_radians(sun_rotation[0]))
+                 * yrotation(to_radians(sun_rotation[1])) * vec4(0, 0, 1, 0);
         }
 
     protected:
