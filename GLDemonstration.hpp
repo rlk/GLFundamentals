@@ -70,24 +70,16 @@ namespace gl
             }
         }
 
-        /// Dispatch SDL events.
+        /// Application main loop.
 
-        void run()
+        void run(bool b = false)
         {
             SDL_Event e;
 
             while (running)
             {
-                while (SDL_PollEvent(&e))
-                    switch (e.type)
-                    {
-                        case SDL_MOUSEBUTTONDOWN: button(e.button.button, true);     break;
-                        case SDL_MOUSEBUTTONUP:   button(e.button.button, false);    break;
-                        case SDL_MOUSEMOTION:     motion(e.motion.x, e.motion.y);    break;
-                        case SDL_KEYDOWN: if (e.key.repeat == 0) key(e.key.keysym.scancode, true);  break;
-                        case SDL_KEYUP:   if (e.key.repeat == 0) key(e.key.keysym.scancode, false); break;
-                        case SDL_QUIT:            running = false;                   break;
-                    }
+                if (b && SDL_WaitEvent(&e)) dispatch(e);
+                while   (SDL_PollEvent(&e)) dispatch(e);
 
                 step();
                 draw();
@@ -104,6 +96,27 @@ namespace gl
         }
 
     protected:
+
+        /// Dispatch an SDL event.
+
+        virtual void dispatch(SDL_Event& e)
+        {
+            switch (e.type)
+            {
+                case SDL_MOUSEBUTTONDOWN:
+                    button(e.button.button, true);  break;
+                case SDL_MOUSEBUTTONUP:
+                    button(e.button.button, false); break;
+                case SDL_MOUSEMOTION:
+                    motion(e.motion.x, e.motion.y); break;
+                case SDL_KEYDOWN:
+                    key(e.key.keysym.scancode, e.key.repeat, true);  break;
+                case SDL_KEYUP:
+                    key(e.key.keysym.scancode, e.key.repeat, false); break;
+                case SDL_QUIT:
+                    running = false; break;
+            }
+        }
 
         /// Draw the scene.
 
@@ -172,28 +185,31 @@ namespace gl
 
         /// Handle a key press or release.
 
-        virtual void key(int key, bool down)
+        virtual void key(int key, bool repeat, bool down)
         {
-            if (down)
-                switch (key)
-                {
-                case SDL_SCANCODE_A:     cam_velocity[0] -= 1.0; break;
-                case SDL_SCANCODE_D:     cam_velocity[0] += 1.0; break;
-                case SDL_SCANCODE_C:     cam_velocity[1] -= 1.0; break;
-                case SDL_SCANCODE_SPACE: cam_velocity[1] += 1.0; break;
-                case SDL_SCANCODE_W:     cam_velocity[2] -= 1.0; break;
-                case SDL_SCANCODE_S:     cam_velocity[2] += 1.0; break;
-                }
-            else
-                switch (key)
-                {
-                case SDL_SCANCODE_A:     cam_velocity[0] += 1.0; break;
-                case SDL_SCANCODE_D:     cam_velocity[0] -= 1.0; break;
-                case SDL_SCANCODE_C:     cam_velocity[1] += 1.0; break;
-                case SDL_SCANCODE_SPACE: cam_velocity[1] -= 1.0; break;
-                case SDL_SCANCODE_W:     cam_velocity[2] += 1.0; break;
-                case SDL_SCANCODE_S:     cam_velocity[2] -= 1.0; break;
-                }
+            if (!repeat)
+            {
+                if (down)
+                    switch (key)
+                    {
+                    case SDL_SCANCODE_A:     cam_velocity[0] -= 1.0; break;
+                    case SDL_SCANCODE_D:     cam_velocity[0] += 1.0; break;
+                    case SDL_SCANCODE_C:     cam_velocity[1] -= 1.0; break;
+                    case SDL_SCANCODE_SPACE: cam_velocity[1] += 1.0; break;
+                    case SDL_SCANCODE_W:     cam_velocity[2] -= 1.0; break;
+                    case SDL_SCANCODE_S:     cam_velocity[2] += 1.0; break;
+                    }
+                else
+                    switch (key)
+                    {
+                    case SDL_SCANCODE_A:     cam_velocity[0] += 1.0; break;
+                    case SDL_SCANCODE_D:     cam_velocity[0] -= 1.0; break;
+                    case SDL_SCANCODE_C:     cam_velocity[1] += 1.0; break;
+                    case SDL_SCANCODE_SPACE: cam_velocity[1] -= 1.0; break;
+                    case SDL_SCANCODE_W:     cam_velocity[2] += 1.0; break;
+                    case SDL_SCANCODE_S:     cam_velocity[2] -= 1.0; break;
+                    }
+            }
         }
 
         /// Return the current projection matrix.
