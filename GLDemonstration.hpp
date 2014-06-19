@@ -110,9 +110,9 @@ namespace gl
                 case SDL_MOUSEMOTION:
                     motion(e.motion.x, e.motion.y); break;
                 case SDL_KEYDOWN:
-                    key(e.key.keysym.scancode, e.key.repeat, true);  break;
+                    key(e.key.keysym.scancode, true,  e.key.repeat); break;
                 case SDL_KEYUP:
-                    key(e.key.keysym.scancode, e.key.repeat, false); break;
+                    key(e.key.keysym.scancode, false, e.key.repeat); break;
                 case SDL_QUIT:
                     running = false; break;
             }
@@ -185,7 +185,7 @@ namespace gl
 
         /// Handle a key press or release.
 
-        virtual void key(int key, bool repeat, bool down)
+        virtual void key(int key, bool down, bool repeat)
         {
             if (!repeat)
             {
