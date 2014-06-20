@@ -109,6 +109,8 @@ namespace gl
                     button(e.button.button, false); break;
                 case SDL_MOUSEMOTION:
                     motion(e.motion.x, e.motion.y); break;
+                case SDL_MOUSEWHEEL:
+                    wheel(e.wheel.x, e.wheel.y); break;
                 case SDL_KEYDOWN:
                     key(e.key.keysym.scancode, true,  e.key.repeat); break;
                 case SDL_KEYUP:
@@ -150,6 +152,12 @@ namespace gl
             }
             prev_x = curr_x;
             prev_y = curr_y;
+        }
+
+        /// Handle mouse wheel rotation.
+
+        virtual void wheel(int dx, int dy)
+        {
         }
 
         /// Handle mouse pointer motion.
