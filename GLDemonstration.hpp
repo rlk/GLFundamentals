@@ -83,7 +83,7 @@ namespace gl
 
                 step();
                 draw();
-                SDL_GL_SwapWindow(window);
+                swap();
             }
         }
 
@@ -124,6 +124,13 @@ namespace gl
 
         virtual void draw()
         {
+        }
+
+        /// Swap buffers.
+
+        virtual void swap()
+        {
+            SDL_GL_SwapWindow(window);
         }
 
         /// Animate.
@@ -256,6 +263,9 @@ namespace gl
         vec2 cam_rotation;
         vec2 sun_rotation;
 
+        SDL_Window   *window;
+        SDL_GLContext context;
+
     private:
 
         bool drag_sun_rotation;
@@ -266,9 +276,6 @@ namespace gl
         int  prev_y;
         int  curr_x;
         int  curr_y;
-
-        SDL_Window   *window;
-        SDL_GLContext context;
     };
 }
 
